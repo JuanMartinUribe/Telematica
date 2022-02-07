@@ -27,6 +27,7 @@ def client(host,port):
     #puerto 80
     #http request get b'GET /code/romeo.txt HTTP/1.0\r\nHost: www.py4inf.com\r\n\r\n'
     request_string = 'GET /code/romeo.txt HTTP/1.0\r\nHost: www.py4inf.com\r\n\r\n'
+    
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect((socket.gethostbyname(host),port))
 
