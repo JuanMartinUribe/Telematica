@@ -1,8 +1,11 @@
 import socket
 import sys, getopt
+import requests
 import email
 import pprint
 from io import StringIO
+from urllib.parse import urlparse
+
 
 def main(argv):
 
@@ -23,16 +26,23 @@ def main(argv):
    return host,port
 
 def client(host,port):
-    #host de prueba 'www.py4inf.com'
-    #puerto 80
-    #http request get b'GET /code/romeo.txt HTTP/1.0\r\nHost: www.py4inf.com\r\n\r\n'
-    request_string = 'GET /code/romeo.txt HTTP/1.0\r\nHost: www.py4inf.com\r\n\r\n'
     
+    if host[:4] == "http": host = host[7:]
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+   
     s.connect((socket.gethostbyname(host),port))
+    
+    request_string = 'GET / HTTP/1.0\r\nHost: ec2-3-217-183-77.compute-1.amazonaws.com\r\n\r\n'
+    
+    
+    print(socket.gethostbyname(host))
+    
 
     _, headers = request_string.split('\r\n', 1)
-
+   
+    prueba = urlparse(socket.gethostbyname(host))
+    print(prueba)
     # construct a message from the request string
     message = email.message_from_file(StringIO(headers))
 
@@ -41,8 +51,8 @@ def client(host,port):
 
     # pretty-print the dictionary of headers
     pprint.pprint(headers, width=160)
-    
-    s.sendall(bytes(request_string,'utf-8'))
+      
+    s.sendall(b'GET / HTTP/1.0\r\nHost: 3.217.183.77 \r\n\r\n')
 
     data = s.recv(1024)
     print('Received', repr(data))
