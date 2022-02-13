@@ -16,11 +16,11 @@ python .\yacurl.py -h http://3.217.183.77 -p 80 index.html
 '''
 
 def main(argv):
-
+   port = 80
    try:
       opts, args = getopt.getopt(argv,"Hh:p:",["host=","port="])
       print(opts,args)
-      host = 80
+      
    except getopt.GetoptError:
       print ('yacurl.py -h <host> -p <port>')
       sys.exit(2)
