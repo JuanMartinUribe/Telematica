@@ -1,11 +1,19 @@
 import socket
 import sys, getopt
-import requests
 import email
 import pprint
 from io import StringIO
-from urllib.parse import urlparse
 
+'''YACURL JUAN MARTIN URIBE, TOPICOS ESPECIALES EN TELEMATICA LABORATORIO1
+Se reciben dos argumentos -h host -p port y uno opcional para guardar archivos:
+
+ejemplo de como correr el programa:
+python .\yacurl.py -h http://3.217.183.77 -p 80
+
+o para guardar archivo en el directorio actual
+python .\yacurl.py -h http://3.217.183.77 -p 80 index.html
+
+'''
 
 def main(argv):
 
@@ -26,7 +34,10 @@ def main(argv):
    return host,port
 
 def client(host,port):
-    path = "/"
+    #Encabezados comunes
+    path = ""
+    userAgent = "yacurl/1.0"
+    accept = "Accept: */*"
     if host[:4] == "http": host = host[7:]
 
     try:
@@ -34,34 +45,50 @@ def client(host,port):
        host = host[:host.index('/')]
        
     except ValueError:
-       pass
-    print(host,path)   
+       path = "/"
+    print(host,path,port)
+
+    #Conexion mediante socket  
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)     
     s.connect((socket.gethostbyname(host),port))
 
     
-    #'GET / HTTP/1.0\r\nHost: ec2-3-217-183-77.compute-1.amazonaws.com\r\n\r\n'
-    request_string = 'GET %s HTTP/1.0\r\nHost: %s \r\n\r\n' %(path,host)
+    #Construccion del paquete GET
+    request_string = 'GET %s HTTP/1.0\r\nHost: %s \r\nUser-Agent: %s \r\nAccept: %s \r\n\r\n' %(path,host,userAgent,accept)
     print(request_string)
-    print(socket.gethostbyname(host))
     
-
+    #Print de los headers comunes y el paquete get creado
     _, headers = request_string.split('\r\n', 1)
-    
-    # construct a message from the request string
     message = email.message_from_file(StringIO(headers))
-
-    # construct a dictionary containing the headers
     headers = dict(message.items())
-
-    # pretty-print the dictionary of headers
     pprint.pprint(headers, width=160)
+   
+    #Envio de informacion
+    s.sendall(bytes(request_string,encoding='utf-8'))
+    
+    #Recepcion del htpp response y decodificacion dependiendo de si es un arhivo de texto,html, etc o una imagen o gif
+    #a veces no se representa el html completo, hay que correr el programa un par de veces para que funcione
+    
+    if len(sys.argv)<6:
+      try:
+         data = s.recv(4096).decode('utf-8')
+         print(data)
+      except:
+         print("data could not be decoded, try output")
+    else:
+       if 'gif' in sys.argv[5] or 'image' in sys.argv[5]:
+          data = s.recv(4096)
+          localFile = sys.argv[5]
+          file = open(localFile,'w')
+          file.write(repr(data))
+          file.close()
+       else:
+          data = s.recv(4096).decode('utf-8')
+          localFile = sys.argv[5]
+          file = open(localFile,'w')
+          file.write(data)
+          file.close()
       
-    s.sendall(bytes(request_string,encoding='utf8'))
-
-    data = s.recv(1024)
-    print('Received', repr(data))
-
 if __name__ == "__main__":
     host,port = main(sys.argv[1:])
     client(host,port)
