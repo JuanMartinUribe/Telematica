@@ -20,6 +20,7 @@ def main(argv):
    try:
       opts, args = getopt.getopt(argv,"Hh:p:",["host=","port="])
       print(opts,args)
+      host = 80
    except getopt.GetoptError:
       print ('yacurl.py -h <host> -p <port>')
       sys.exit(2)
@@ -31,6 +32,7 @@ def main(argv):
          host = str(arg)
       elif opt in ("-p", "--port"):
          port = int(arg)
+   
    return host,port
 
 def client(host,port):
@@ -68,7 +70,7 @@ def client(host,port):
     
     #Recepcion del htpp response y decodificacion dependiendo de si es un arhivo de texto,html, etc o una imagen o gif
     #a veces no se representa el html completo, hay que correr el programa un par de veces para que funcione
-    
+
     if len(sys.argv)<6:
       try:
          data = s.recv(4096).decode('utf-8')
